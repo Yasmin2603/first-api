@@ -1,7 +1,10 @@
 package com.yasmin.first_api.controller;
+import com.yasmin.first_api.domain.user.Cliente;
+import com.yasmin.first_api.dto.CreateCliente;
+import com.yasmin.first_api.dto.UpdateCliente;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 
-import com.yasmin.first_api.domain.Cliente;
 import com.yasmin.first_api.service.ClienteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -17,13 +20,14 @@ public class ClienteController {
     public ClienteService clienteService;
 
     @GetMapping()
-    public List listarTodos()
+    public List<Cliente> listarTodos()
     {
         return clienteService.listarTodos();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Cliente> buscar(@PathVariable("id") Long id)
+    public ResponseEntity<Cliente> buscar
+            (@PathVariable("id") String id)
     {
         Cliente buscarCliente =  clienteService.buscar(id);
         if (buscarCliente != null)
@@ -35,27 +39,25 @@ public class ClienteController {
     }
 
     @PostMapping
-    public ResponseEntity<Cliente> salvar(@RequestBody Cliente dados)
+    public ResponseEntity<Cliente> salvar(@RequestBody @Valid CreateCliente dados)
     {
-        if (dados.getNome() != null && !dados.getNome().trim().isEmpty() && dados.getEmail() != null && !dados.getEmail().trim().isEmpty()) {
-            return ResponseEntity.ok(clienteService.salvar(dados.getNome(), dados.getEmail()));
-        }
-        return ResponseEntity.badRequest().build();
+        Cliente novoCliente = clienteService.salvar(dados.name(), dados.email());
+        return ResponseEntity.ok(novoCliente);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Cliente> atualizar(@PathVariable("id") long id, @RequestBody Cliente dados)
+    public ResponseEntity<Cliente> atualizar(@PathVariable("id") String id, @RequestBody @Valid UpdateCliente dados)
     {
-        Cliente clienteAtualizado = clienteService.atualizar(id, dados.getNome(), dados.getEmail());
-        if (clienteAtualizado != null)
-        {
+        Cliente clienteAtualizado = clienteService.atualizar(id, dados.name(), dados.email());
+
+        if (clienteAtualizado != null) {
             return ResponseEntity.ok(clienteAtualizado);
         }
         return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deletar(@PathVariable("id") long id)
+    public ResponseEntity<String> deletar(@PathVariable("id") String id)
     {
         String clienteDeletado = clienteService.deletar(id);
         if(clienteDeletado != null)
